@@ -1,5 +1,5 @@
 # cc-voltage-project
-This repository contains the codes for all the experiments performed in the paper [Capacity and Internal Resistance of lithium-ion batteries: Full degradation curve prediction from Voltage response at constant Current at discharge.](https://www.sciencedirect.com/science/article/pii/S0378775322014549)
+This repository contains the codes for all the experiments performed in the paper [R. Ibraheem, C. Strange, G. dos Reis, Capacity and internal resistance of lithium-ion batteries: Full degradation curve prediction from voltage response at constant current at discharge, Journal of Power Sources 556 (2023)232477.](https://www.sciencedirect.com/science/article/pii/S0378775322014549)
 
 To run the codes, create a folder named **data**. Download the following data and put them in this folder:
 
