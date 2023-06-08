@@ -23,6 +23,9 @@ def multi_cycle_features(feature_values, n=50):
 
         # Take 10% of n
         i = int(0.1 * n)
+       
+        # Narrow the feature values down to n
+        feature_values = feature_values[:n]
 
         # Create features corresponding to n
         y_0 = np.median(feature_values[:i])
