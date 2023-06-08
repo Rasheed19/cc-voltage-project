@@ -31,7 +31,7 @@ def ccv_features(data_dict, step_size=1, return_ccv=False, n=50):
         # initialize a dictionary to store CCV for each cycle
         this_cycle = {}
 
-        for cycle in data_dict[cell]['cycle_dict'].keys():
+        for cycle in list(data_dict[cell]['cycle_dict'].keys())[:n]:
             # get the discharge values
             i_values = utils_noah.get_charge_discharge_values(data_dict, 'I', cell, cycle, 'di')
             v_values = utils_noah.get_charge_discharge_values(data_dict, 'V', cell, cycle, 'di')
