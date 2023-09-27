@@ -9,11 +9,13 @@ from utils import utils_models, utils_noah, utils_ivc, utils_dgrd
 from datetime import datetime
 import importlib
 import hashlib
+from config.definitions import ROOT_DIR
 
 importlib.reload(utils_models)
 importlib.reload(utils_noah)
 importlib.reload(utils_ivc)
 importlib.reload(utils_dgrd)
+
 
 def test_set_check(identifier, test_ratio, hash):
     """
@@ -48,7 +50,7 @@ def split_train_test_by_id(data, test_ratio, hash=hashlib.md5):
     np.random.seed(42)
 
     ids = np.array(list(data.keys()))
-    # Shuffle the ids 
+    # Shuffle the ids
     shuffled_indices = np.random.permutation(len(ids))
     ids = ids[shuffled_indices]
 
@@ -72,7 +74,7 @@ class FeatureTransformation:
 
     def fit_transform(self, data, targets, with_eol):
         df = utils_ivc.ccv_features(data_dict=data, step_size=self.step_size, n=self.n).join(
-                                                      utils_dgrd.create_knee_elbow_data(data, with_eol)[targets])
+            utils_dgrd.create_knee_elbow_data(data, with_eol)[targets])
         df_features_only = df.drop(targets, axis=1)
 
         # Perform feature scaling
@@ -80,7 +82,8 @@ class FeatureTransformation:
         return self.sc.transform(df_features_only.values), df[targets].values
 
     def transform(self, data):
-        df = utils_ivc.ccv_features(data_dict=data, step_size=self.step_size, n=self.n)
+        df = utils_ivc.ccv_features(
+            data_dict=data, step_size=self.step_size, n=self.n)
         return self.sc.transform(df.values)
 
 
@@ -92,7 +95,8 @@ def time_monitor(initial_time=None):
         initial_time = datetime.now()
         return initial_time
     else:
-        thour, temp_sec = divmod((datetime.now() - initial_time).total_seconds(), 3600)
+        thour, temp_sec = divmod(
+            (datetime.now() - initial_time).total_seconds(), 3600)
         tmin, tsec = divmod(temp_sec, 60)
 
         return '%ih %imin and %ss.' % (thour, tmin, round(tsec, 2))
@@ -122,7 +126,8 @@ def load_data(filename, batch_num, num_cycles=None):
 
     summary_features = ["IR", "QCharge", "QDischarge", "Tavg", "Tmin",
                         "Tmax", "chargetime", "cycle"]
-    cycle_features = ["I", "Qc", "Qd", "Qdlin", "T", "Tdlin", "V", "discharge_dQdV", "t"]
+    cycle_features = ["I", "Qc", "Qd", "Qdlin",
+                      "T", "Tdlin", "V", "discharge_dQdV", "t"]
 
     for i in range(num_cells):
 
@@ -130,7 +135,8 @@ def load_data(filename, batch_num, num_cycles=None):
         if num_cycles is None:
             loaded_cycles = f[batch['cycles'][i, 0]]['I'].shape[0]
         else:
-            loaded_cycles = min(num_cycles, f[batch['cycles'][i, 0]]['I'].shape[0])
+            loaded_cycles = min(
+                num_cycles, f[batch['cycles'][i, 0]]['I'].shape[0])
 
         if i % 10 == 0:
             print(f"* {i} cells loaded ({loaded_cycles} cycles)")
@@ -147,7 +153,8 @@ def load_data(filename, batch_num, num_cycles=None):
         }
 
         for feature in summary_features:
-            cell_dict["summary"][feature] = np.hstack(f[batch['summary'][i, 0]][feature][0, :].tolist())
+            cell_dict["summary"][feature] = np.hstack(
+                f[batch['summary'][i, 0]][feature][0, :].tolist())
 
         # for the cycle data
         cell_dict["cycle_dict"] = {}
@@ -168,7 +175,6 @@ def load_and_save_dict_data(num_cycles=None, option=1):
     """
     This function load and save downloaded matlab files as pickle files.
 
-
     Args:
     ----
          num_cycles:  number of cycles to load
@@ -177,14 +183,16 @@ def load_and_save_dict_data(num_cycles=None, option=1):
 
     # paths for data file with each batch of cells
     mat_filenames = {
-        "batch1": os.path.join(".", "data", "2017-05-12_batchdata_updated_struct_errorcorrect.mat"),
-        "batch2": os.path.join(".", "data", "2017-06-30_batchdata_updated_struct_errorcorrect.mat"),
-        "batch3": os.path.join(".", "data", "2018-04-12_batchdata_updated_struct_errorcorrect.mat"),
-        "batch4": os.path.join(".", "data", "2018-08-28_batchdata_updated_struct_errorcorrect.mat"),
-        "batch5": os.path.join(".", "data", "2018-09-02_batchdata_updated_struct_errorcorrect.mat"),
-        "batch6": os.path.join(".", "data", "2018-09-06_batchdata_updated_struct_errorcorrect.mat"),
-        "batch7": os.path.join(".", "data", "2018-09-10_batchdata_updated_struct_errorcorrect.mat"),
-        "batch8": os.path.join(".", "data", "2019-01-24_batchdata_updated_struct_errorcorrect.mat")}
+        "batch1": os.path.join(f"{ROOT_DIR}", "data", "2017-05-12_batchdata_updated_struct_errorcorrect.mat"),
+        "batch2": os.path.join(f"{ROOT_DIR}", "data", "2017-06-30_batchdata_updated_struct_errorcorrect.mat"),
+        "batch3": os.path.join(f"{ROOT_DIR}", "data", "2018-04-12_batchdata_updated_struct_errorcorrect.mat"),
+        "batch4": os.path.join(f"{ROOT_DIR}", "data", "2018-08-28_batchdata_updated_struct_errorcorrect.mat"),
+        "batch5": os.path.join(f"{ROOT_DIR}", "data", "2018-09-02_batchdata_updated_struct_errorcorrect.mat"),
+        "batch6": os.path.join(f"{ROOT_DIR}", "data", "2018-09-06_batchdata_updated_struct_errorcorrect.mat"),
+        "batch7": os.path.join(f"{ROOT_DIR}", "data", "2018-09-10_batchdata_updated_struct_errorcorrect.mat"),
+        "batch8": os.path.join(f"{ROOT_DIR}", "data", "2019-01-24_batchdata_updated_struct_errorcorrect.mat")
+    }
+
 
     start = time_monitor()
     print("Loading batch 1 data...")
@@ -260,7 +268,8 @@ def load_and_save_dict_data(num_cycles=None, option=1):
         # useful when all cycles loaded
         if num_cycles is None:
             for j, jk in enumerate(batch2[b2_keys[i]]['cycle_dict'].keys()):
-                batch1[bk]['cycle_dict'][str(last_cycle + j)] = batch2[b2_keys[i]]['cycle_dict'][jk]
+                batch1[bk]['cycle_dict'][str(
+                    last_cycle + j)] = batch2[b2_keys[i]]['cycle_dict'][jk]
     '''
     The authors exclude cells that:
         * do not reach 80% capacity (batch 1)
@@ -294,7 +303,8 @@ def load_and_save_dict_data(num_cycles=None, option=1):
     for batch in batches:
         for cell in batch.keys():
             for feat in batch[cell]['summary'].keys():
-                batch[cell]['summary'][feat] = np.delete(batch[cell]['summary'][feat], 0)
+                batch[cell]['summary'][feat] = np.delete(
+                    batch[cell]['summary'][feat], 0)
 
     if num_cycles is None:
         filename_suffix = 'all.pkl'
@@ -304,17 +314,24 @@ def load_and_save_dict_data(num_cycles=None, option=1):
     if option == 1:
 
         # combine all batches in one dictionary
-        data_dict = {**batch1, **batch2, **batch3, **batch4, **batch5, **batch6, **batch7, **batch8}
+        data_dict = {**batch1, **batch2, **batch3, **
+                     batch4, **batch5, **batch6, **batch7, **batch8}
 
         # save the dict as a pickle file
-        with open(os.path.join("data", "data_" + filename_suffix), "wb") as fp:
-            pickle.dump(data_dict, fp)
+        dump_data(
+            data=data_dict,
+            path=f"{ROOT_DIR}/data",
+            fname=f"data_{filename_suffix}"
+        )
 
     elif option == 2:
         # save the batch separately
         for i, batch in zip(('1', '2', '3', '4', '5', '6', '7', '8'), batches):
-            with open(os.path.join("data", "batch" + i + '_' + filename_suffix), "wb") as fp:
-                pickle.dump(batch, fp)
+            dump_data(
+                data=batch,
+                path=f"{ROOT_DIR}/data",
+                fname=f"batch{i}_{filename_suffix}"
+            )
 
 
 def read_data(fname, folder="data"):
@@ -353,3 +370,16 @@ def dict_of_colours(data_dict):
     colours = cmap(eol)
 
     return dict(zip(data_dict.keys(), colours))
+
+
+def read_data(path, fname):
+    # load pickle data
+    with open(os.path.join(path, fname), "rb") as fp:
+        data = pickle.load(fp)
+
+    return data
+
+
+def dump_data(data, path, fname):
+    with open(os.path.join(path, fname), "wb") as fp:
+        pickle.dump(data, fp)

@@ -4,9 +4,11 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 import scipy.stats
 from utils import utils_noah
+from config.definitions import ROOT_DIR
 import importlib
 
 importlib.reload(utils_noah)
+
 
 def gradient_estimate(f, x=None):
     """
@@ -33,17 +35,20 @@ def ccv_features(data_dict, step_size=1, return_ccv=False, n=50):
 
         for cycle in list(data_dict[cell]['cycle_dict'].keys())[:n]:
             # get the discharge values
-            i_values = utils_noah.get_charge_discharge_values(data_dict, 'I', cell, cycle, 'di')
-            v_values = utils_noah.get_charge_discharge_values(data_dict, 'V', cell, cycle, 'di')
-            t_values = utils_noah.get_charge_discharge_values(data_dict, 't', cell, cycle, 'di')
+            i_values = utils_noah.get_charge_discharge_values(
+                data_dict, 'I', cell, cycle, 'di')
+            v_values = utils_noah.get_charge_discharge_values(
+                data_dict, 'V', cell, cycle, 'di')
+            t_values = utils_noah.get_charge_discharge_values(
+                data_dict, 't', cell, cycle, 'di')
 
             # get the indices of the start and end of CC
             start_I, end_I = utils_noah.get_constant_indices(i_values, 'di')
 
-            # get the corresponding voltages 
+            # get the corresponding voltages
             ccv = v_values[start_I:end_I + 1]
 
-            # get the corresponding time 
+            # get the corresponding time
             cct = t_values[start_I:end_I + 1]
 
             # Interpolation of voltage curve
@@ -60,7 +65,8 @@ def ccv_features(data_dict, step_size=1, return_ccv=False, n=50):
 
             CCV_features.append([ccv.min(), ccv.max(), ccv.mean(), ccv.var(), scipy.stats.skew(ccv),
                                  scipy.stats.kurtosis(ccv, fisher=False),
-                                 np.trapz(ccv, dx=h), grad_ccv[0], grad_ccv[-1], grad_ccv.min(), grad_ccv.max()
+                                 np.trapz(
+                                     ccv, dx=h), grad_ccv[0], grad_ccv[-1], grad_ccv.min(), grad_ccv.max()
                                  ])
 
             this_cycle[cycle] = [cct, ccv]
@@ -113,8 +119,10 @@ def plot_CCV_features(data_dict, ylabel=None, ylim=None, sample_cells=None, opti
                     for cell in batch:
                         ax[i // 3, i % 3].plot(data_dict[cell][ylabel], data_dict[cell][feature], 'o', linewidth=1,
                                                markersize=2)
-                        ax[i // 3, i % 3].set_ylabel(x_labels[feature], fontsize=14)
-                        ax[i // 3, i % 3].set_xlabel(x_labels[ylabel], fontsize=14)
+                        ax[i // 3, i %
+                            3].set_ylabel(x_labels[feature], fontsize=14)
+                        ax[i // 3, i %
+                            3].set_xlabel(x_labels[ylabel], fontsize=14)
                         ax[i // 3, i % 3].set_ylim(ylim)
                     i += 1
             i = 0
@@ -133,7 +141,7 @@ def plot_CCV_features(data_dict, ylabel=None, ylim=None, sample_cells=None, opti
 
             if i == 0:
                 ax.set_ylabel('CC discharge voltage (V)', fontsize=16)
-            
+
             if i != 0:
                 ax.set_yticklabels([])
 
@@ -148,7 +156,7 @@ def plot_CCV_features(data_dict, ylabel=None, ylim=None, sample_cells=None, opti
                 ax.plot(data_dict[cell][cycle][0] - min(data_dict[cell][cycle][0]), data_dict[cell][cycle][1],
                         c=cmap(int(cycle)), linewidth=1, alpha=0.5)
             ax.set_xlim(0, 16)
-            
+
             """
             # Normalizer
             vmin, vmax = 1, len(cycles)
@@ -165,9 +173,9 @@ def plot_CCV_features(data_dict, ylabel=None, ylim=None, sample_cells=None, opti
 
             # Add text with an arrow pointing to a specific point on the plot
             ax.annotate('Decreasing', xy=(10, 2.6), xytext=(8, 3.3),
-                               arrowprops=dict(facecolor='black', linewidth=0.1), size=14)
+                        arrowprops=dict(facecolor='black', linewidth=0.1), size=14)
 
-            #ax.text(0.02, 0.1, cell, transform=ax.transAxes,
-             #                       fontsize=16, fontweight='bold', va='top')
- 
-        plt.savefig(fname="plots/ccv_over_cycles", bbox_inches='tight')
+            # ax.text(0.02, 0.1, cell, transform=ax.transAxes,
+            #                       fontsize=16, fontweight='bold', va='top')
+
+        plt.savefig(fname=f"{ROOT_DIR}/plots/ccv_over_cycles", bbox_inches='tight')

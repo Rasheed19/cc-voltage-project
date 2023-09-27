@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 from utils import utils_gn
 import importlib
-from scipy.signal import find_peaks
 
 importlib.reload(utils_gn)
 
@@ -12,7 +11,7 @@ def strings_multi_cycle_features(n=50):
     Create feature names corresponding to cycle number n
     """
     return 'f0', f'f{int(n / 2)}', f'f{str(n)}', f'f{str(n)}-0', 'fdiff'
-  
+
 
 def multi_cycle_features(feature_values, n=50):
     """
@@ -32,7 +31,7 @@ def multi_cycle_features(feature_values, n=50):
         y_diff = (y_end - y_med) - (y_med - y_0)
 
         return [y_0, y_med, y_end, y_endm0, y_diff]
-    
+
     except TypeError:
         print('n must be integer and >= 10')
 
@@ -49,16 +48,18 @@ def get_charge_discharge_values(data_dict, col_name, cell, cycle, option):
         cycle (str):      a string denoting cycle number; e.g, '2'
         option (str):     a string specifying either pulling up charge/discharge values;
                           "ch": charge, "di": discharge
-    
+
     Returns:
     -------
            returns extracted charge/discharge values
     """
     # An outlier in b1c2 at cycle 2176, measurement is in seconds and thus divide it by 60
     if cell == 'b1c2' and cycle == '2176':
-        summary_charge_time = data_dict[cell]['summary']['chargetime'][int(cycle) - 2] / 60
+        summary_charge_time = data_dict[cell]['summary']['chargetime'][int(
+            cycle) - 2] / 60
     else:
-        summary_charge_time = data_dict[cell]['summary']['chargetime'][int(cycle) - 2]
+        summary_charge_time = data_dict[cell]['summary']['chargetime'][int(
+            cycle) - 2]
 
     values = data_dict[cell]['cycle_dict'][cycle][col_name]
 
@@ -77,7 +78,7 @@ def get_constant_indices(feature, option):
     ----
              feature (list/array):     a list of considered feature, e.g. current, voltage
              option (str):             a string to provide option for charge ('ch') and discharge ('di') indices
-    
+
     Returns:
     -------
             tuple; start, end indices constant values for a given feature. 
@@ -105,7 +106,6 @@ def get_constant_indices(feature, option):
         return opt_list[0], opt_list[-1]
 
 
-
 def cycle_life(data_dict):
     """
     Function that returns the cycle life/eol of cells.
@@ -123,7 +123,8 @@ def cycle_life(data_dict):
 
     for cell in data_dict.keys():
         qd = data_dict[cell]['summary']['QDischarge']
-        qd_eol = qd >= 0.88  # we focus on the definition of eol: cycle number at 80% of nominal capacity
+        # we focus on the definition of eol: cycle number at 80% of nominal capacity
+        qd_eol = qd >= 0.88
         qd = qd[qd_eol]
         cycle_life.append(len(qd))
 

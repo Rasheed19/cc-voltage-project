@@ -26,10 +26,12 @@ def create_knee_elbow_data(data_dict, with_eol=True):
                                                 'e-o', 'e-p', 'IRate-o', 'IRate-p', 'IRatEOL', 'EOL'])
         for cell in data_dict.keys():
             qd = data_dict[cell]['summary']['QDischarge']
-            qd_eol = qd >= 0.88  # we focus on the definition of eol: cycle number at 80% of nominal capacity
+            # we focus on the definition of eol: cycle number at 80% of nominal capacity
+            qd_eol = qd >= 0.88
             qd = qd[qd_eol]
             ir = data_dict[cell]['summary']['IR']
-            ir = ir[qd_eol[:len(ir)]]  # we use the definition of eol to filter internal resistance
+            # we use the definition of eol to filter internal resistance
+            ir = ir[qd_eol[:len(ir)]]
             knee_elbow_data.loc[cell, ['k-o', 'k-p', 'RUL', 'Qatk-o', 'Qatk-p']] = utils_models.knee_elbow_detection(
                 x_data=np.arange(len(qd)) + 1,
                 y_data=qd,
@@ -54,7 +56,8 @@ def create_knee_elbow_data(data_dict, with_eol=True):
             ir = data_dict[cell]['summary']['IR']
             ttk_o, ttk_p, _, q_at_k_o, q_at_k_p = utils_models.knee_elbow_detection(x_data=np.arange(len(qd)) + 1,
                                                                                     y_data=qd, type='knee')
-            knee_elbow_data.loc[cell, ['k-o', 'k-p', 'Qatk-o', 'Qatk-p']] = ttk_o, ttk_p, q_at_k_o, q_at_k_p
+            knee_elbow_data.loc[cell, ['k-o', 'k-p', 'Qatk-o',
+                                       'Qatk-p']] = ttk_o, ttk_p, q_at_k_o, q_at_k_p
             knee_elbow_data.loc[cell, ['e-o', 'e-p', 'IRate-o', 'IRate-p']] = utils_models.knee_elbow_detection(
                 x_data=np.arange(len(ir)) + 1,
                 y_data=ir,

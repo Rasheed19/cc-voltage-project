@@ -13,6 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from utils import utils_gn
+from config.definitions import ROOT_DIR
 import importlib
 
 importlib.reload(utils_gn)
@@ -31,7 +32,8 @@ def knee_elbow_detection(x_data,
                          ylim=None,
                          title=None,
                          point_name1=None,
-                         point_name2=None):
+                         point_name2=None
+                         ):
     """
     Function that detect knees and elbows by fitting Bacon-Watts and Double Bacon-Watts to a given data.
 
@@ -61,16 +63,16 @@ def knee_elbow_detection(x_data,
 
     def double_bacon_watts_model(x, alpha0, alpha1, alpha2, alpha3, x0, x2):
         return alpha0 + alpha1 * (x - x0) + alpha2 * (
-                x - x0) * np.tanh((x - x0) / 1e-8) + alpha3 * (x - x2) * np.tanh((x - x2) / 1e-8)
+            x - x0) * np.tanh((x - x0) / 1e-8) + alpha3 * (x - x2) * np.tanh((x - x2) / 1e-8)
 
     # Define the exponential model for data transformation
     def exponential_model(x, a, b, c, d, e):
         return a * np.exp(b * x - c) + d * x + e
 
-    # Remove outliers from y_data 
+    # Remove outliers from y_data
     clean_data = sg.medfilt(y_data, 5)
 
-    # Get the length of clean data 
+    # Get the length of clean data
     cl = len(clean_data)
 
     # Fit isotonic regression to data to obtain monotonic data
@@ -80,14 +82,15 @@ def knee_elbow_detection(x_data,
         isotonic_reg = IsotonicRegression()
     clean_data = isotonic_reg.fit_transform(x_data, clean_data)
 
-    # Force convexity on the cleaned y_data to prevent early detection of onset 
+    # Force convexity on the cleaned y_data to prevent early detection of onset
     if (p0_exp is None) and type == 'knee':
         p0_exp = [-4, 5e-3, 10, 0, clean_data[0]]
         bounds = ([-np.inf, 0, 0, -1, 0], [0, np.inf, np.inf, 0, np.inf])
     elif (p0_exp is None) and type == 'elbow':
         p0_exp = [4, 0.03, 22, 0, clean_data[0]]
         bounds = (0, np.inf)
-    popt_exp, _ = curve_fit(exponential_model, x_data, clean_data, p0=p0_exp, bounds=bounds)
+    popt_exp, _ = curve_fit(exponential_model, x_data,
+                            clean_data, p0=p0_exp, bounds=bounds)
     clean_data = exponential_model(x_data, *popt_exp)
 
     if want_clean_data:
@@ -96,21 +99,27 @@ def knee_elbow_detection(x_data,
     # Fit the Bacon-Watts model
     if (p0 is None) and type == 'knee':
         p0 = [1, -1e-4, -1e-4, cl * .7]
-        bw_bounds = ([-np.inf, -np.inf, -np.inf, cl / 4], [np.inf, np.inf, np.inf, cl])
+        bw_bounds = ([-np.inf, -np.inf, -np.inf, cl / 4],
+                     [np.inf, np.inf, np.inf, cl])
     elif (p0 is None) and type == 'elbow':
         p0 = [1, 1, 1, cl / 1.5 + 1]
-        bw_bounds = ([-np.inf, -np.inf, -np.inf, cl / 1.5], [np.inf, np.inf, np.inf, cl])
-    popt, pcov = curve_fit(bacon_watts_model, x_data, clean_data, p0=p0, maxfev=50000, bounds=bw_bounds)
+        bw_bounds = ([-np.inf, -np.inf, -np.inf, cl / 1.5],
+                     [np.inf, np.inf, np.inf, cl])
+    popt, pcov = curve_fit(bacon_watts_model, x_data,
+                           clean_data, p0=p0, maxfev=50000, bounds=bw_bounds)
     confint = [popt[3] - 1.96 * np.diag(pcov)[3],
                popt[3] + 1.96 * np.diag(pcov)[3]]
 
-    # Fit the Double Bacon-Watts 
+    # Fit the Double Bacon-Watts
     if (p0_db is None) and type == 'knee':
-        p0_db = [popt[0], popt[1] + popt[2] / 2, popt[2], popt[2] / 2, .8 * popt[3], 1.1 * popt[3]]
-        dbw_bounds = ([-np.inf, -np.inf, -np.inf, -np.inf, cl / 4, cl / 2], [np.inf, np.inf, np.inf, np.inf, cl, cl])
+        p0_db = [popt[0], popt[1] + popt[2] / 2, popt[2],
+                 popt[2] / 2, .8 * popt[3], 1.1 * popt[3]]
+        dbw_bounds = ([-np.inf, -np.inf, -np.inf, -np.inf, cl / 4,
+                      cl / 2], [np.inf, np.inf, np.inf, np.inf, cl, cl])
     elif (p0_db is None) and type == 'elbow':
         p0_db = [1, 1, 1, 1, cl / 1.5 + 1, cl / 1.5 + 3]
-        dbw_bounds = ([-np.inf, -np.inf, -np.inf, -np.inf, cl / 4, cl / 4], [np.inf, np.inf, np.inf, np.inf, cl, cl])
+        dbw_bounds = ([-np.inf, -np.inf, -np.inf, -np.inf, cl / 4,
+                      cl / 4], [np.inf, np.inf, np.inf, np.inf, cl, cl])
     popt_db, pcov_db = curve_fit(double_bacon_watts_model, x_data, clean_data, p0=p0_db, maxfev=50000,
                                  bounds=dbw_bounds)
     confint_db = [popt_db[4] - 1.96 * np.diag(pcov_db)[4],
@@ -121,11 +130,13 @@ def knee_elbow_detection(x_data,
         fig, ax = plt.subplots(1, 2, figsize=(12, 4))
         ax[0].plot(x_data, y_data, 'b--', label='True data', alpha=.7)
         ax[0].plot(x_data, clean_data, 'g-', label='Cleaned data')
-        ax[0].plot(x_data, bacon_watts_model(x_data, *popt), 'r-', linewidth=2, label='Bacon-Watts')
+        ax[0].plot(x_data, bacon_watts_model(x_data, *popt),
+                   'r-', linewidth=2, label='Bacon-Watts')
         ax[0].plot([popt[3]], [bacon_watts_model(popt[3], *popt)], marker="o", markersize=5, markeredgecolor="black",
                    markerfacecolor="black", label=point_name1)
         ax[0].axvline(x=popt[3], color='black', linestyle='--')
-        ax[0].fill_betweenx(ylim, x1=confint[0], x2=confint[1], color='k', alpha=.3, label='95% C.I')
+        ax[0].fill_betweenx(ylim, x1=confint[0], x2=confint[1],
+                            color='k', alpha=.3, label='95% C.I')
         ax[0].set_xlabel('Cycle number', fontsize=16)
         ax[0].set_ylabel(ylabel, fontsize=16)
         ax[0].grid(alpha=.3)
@@ -135,11 +146,13 @@ def knee_elbow_detection(x_data,
 
         ax[1].plot(x_data, y_data, 'b--', label='True data', alpha=.7)
         ax[1].plot(x_data, clean_data, 'g-', label='Cleaned data')
-        ax[1].plot(x_data, double_bacon_watts_model(x_data, *popt_db), 'r-', label='Double Bacon-Watts')
+        ax[1].plot(x_data, double_bacon_watts_model(
+            x_data, *popt_db), 'r-', label='Double Bacon-Watts')
         ax[1].plot([popt_db[4]], [double_bacon_watts_model(popt_db[4], *popt_db)], marker="o", markersize=5,
                    markeredgecolor="black", markerfacecolor="black", label=point_name2)
         ax[1].axvline(x=popt_db[4], color='black', linestyle='--')
-        ax[1].fill_betweenx(ylim, x1=confint_db[0], x2=confint_db[1], color='k', alpha=.3, label='95% C.I')
+        ax[1].fill_betweenx(
+            ylim, x1=confint_db[0], x2=confint_db[1], color='k', alpha=.3, label='95% C.I')
         ax[1].set_xlabel('Cycle number', fontsize=16)
         ax[1].set_ylabel(ylabel, fontsize=16)
         ax[1].grid(alpha=.3)
@@ -155,7 +168,8 @@ def knee_elbow_detection(x_data,
         ttk_o = int(popt_db[4] - 1)  # knee-onset
         ttk_p = int(popt[3] - 1)  # knee-point
         rul = int(len(y_data) - popt_db[4])  # remaining useful life
-        q_at_k_o = double_bacon_watts_model(popt_db[4], *popt_db)  # capacity at knee-onset
+        q_at_k_o = double_bacon_watts_model(
+            popt_db[4], *popt_db)  # capacity at knee-onset
         q_at_k_p = bacon_watts_model(popt[3], *popt)  # capacity at knee-point
 
         return ttk_o, ttk_p, rul, q_at_k_o, q_at_k_p
@@ -164,8 +178,10 @@ def knee_elbow_detection(x_data,
         # Calculate values at knee-point and knee-onset
         tte_o = int(popt_db[4] - 1)  # elbow-onset
         tte_p = int(popt[3] - 1)  # elbow-point
-        ir_at_e_o = double_bacon_watts_model(popt_db[4], *popt_db)  # resistance at elbow-onset
-        ir_at_e_p = bacon_watts_model(popt[3], *popt)  # resistance at elbow-point
+        ir_at_e_o = double_bacon_watts_model(
+            popt_db[4], *popt_db)  # resistance at elbow-onset
+        # resistance at elbow-point
+        ir_at_e_p = bacon_watts_model(popt[3], *popt)
 
         return tte_o, tte_p, ir_at_e_o, ir_at_e_p
 
@@ -184,12 +200,13 @@ def metrics_calculator(y_true, y_pred, multi=False):
     if multi:
         return {'MAE': mean_absolute_error(y_true, y_pred, multioutput='raw_values'),
                 'MAPE': mean_absolute_percentage_error(y_true, y_pred, multioutput='raw_values'),
-                'RMSE': np.sqrt(mean_squared_error(y_true, y_pred, multioutput='raw_values'))
+                'RMSE': mean_squared_error(y_true, y_pred, multioutput='raw_values', squared=False)
                 }
 
     return {'MAE': mean_absolute_error(y_true, y_pred),
             'MAPE': mean_absolute_percentage_error(y_true, y_pred),
-            'RMSE': np.sqrt(mean_squared_error(y_true, y_pred))}
+            'RMSE': mean_squared_error(y_true, y_pred, squared=False)
+            }
 
 
 def axis_to_fig(axis):
@@ -226,8 +243,10 @@ def kfold_cross_validation(X, y, model, cv):
     """
 
     # define metrics to be used
-    metrics = {'MAE': 'neg_mean_absolute_error', 'RMSE': 'neg_root_mean_squared_error',
-               'MAPE': 'neg_mean_absolute_percentage_error'}
+    metrics = {'MAE': 'neg_mean_absolute_error',
+               'RMSE': 'neg_root_mean_squared_error',
+               'MAPE': 'neg_mean_absolute_percentage_error'
+               }
     # metrics = {'MAE': 'neg_mean_absolute_error', 'RMSE': 'neg_root_mean_squared_error'}
 
     # calculate scores
@@ -245,13 +264,12 @@ def kfold_cross_validation(X, y, model, cv):
 
     return scores_summary, scores_raw
 
-            
+
 def antilog(x):
     return 10 ** x
 
 
 class ModelPipeline:
-    model_type = "Extreme Gradient Boost Regressor"
 
     def __init__(self, params, transform_target):
         self.params = params
@@ -260,9 +278,11 @@ class ModelPipeline:
 
     def fit(self, X, y):
         if self.transform_target:
-            self.best_model = TransformedTargetRegressor(MultiOutputRegressor(XGBRegressor(**self.params)),
-                                                         func=np.log10,
-                                                         inverse_func=antilog)
+            self.best_model = TransformedTargetRegressor(
+                MultiOutputRegressor(XGBRegressor(**self.params)),
+                func=np.log10,
+                inverse_func=antilog
+            )
 
             self.best_model.fit(X, y)
             return self.best_model
@@ -298,11 +318,14 @@ class ModifiedQuadraticSpline:
         res = []
         for el in x:
             if self.points[0] <= el < self.points[1]:
-                res.append(self.sol[0] + self.sol[1] * el + self.sol[2] * el ** 2)
+                res.append(self.sol[0] + self.sol[1] *
+                           el + self.sol[2] * el ** 2)
             elif self.points[1] <= el < self.points[2]:
-                res.append(self.sol[3] + self.sol[4] * el + self.sol[5] * el ** 2)
+                res.append(self.sol[3] + self.sol[4] *
+                           el + self.sol[5] * el ** 2)
             elif self.points[2] <= el <= self.points[3]:
-                res.append(self.sol[6] + self.sol[7] * el + self.sol[8] * el ** 2)
+                res.append(self.sol[6] + self.sol[7] *
+                           el + self.sol[8] * el ** 2)
         return res
 
 
@@ -330,7 +353,8 @@ def confidence_interval_estimate(prediction, variance, confidence_level=0.95):
 
 def prediction_interval(X, y, model, n_bootstraps, target_list, predictions, confidence_level=0.95, plot_dist=False):
     """
-    Function that calculates prediction interval for given predictions using the idea of bootstrapping.
+    Function that calculates prediction interval for given
+    predictions using the idea of bootstrapping.
 
     Args:
     ----
@@ -388,7 +412,14 @@ def prediction_interval(X, y, model, n_bootstraps, target_list, predictions, con
     ], var_list
 
 
-def confidence_interval_metrics(actual, predictions, n_bootstraps, target_list, metric_type, alpha=0.05):
+def confidence_interval_metrics(
+    actual,
+    predictions,
+    n_bootstraps,
+    target_list,
+    metric_type,
+    alpha=0.05
+):
     """
     Function that set up a confidence interval for model metrics.
 
@@ -410,14 +441,19 @@ def confidence_interval_metrics(actual, predictions, n_bootstraps, target_list, 
         metric_estimates = []
 
         for _ in range(n_bootstraps):
-            re_sample_idx = np.random.randint(0, len(errors[:, i]), errors[:, i].shape)
+            re_sample_idx = np.random.randint(
+                0, len(errors[:, i]), errors[:, i].shape
+            )
 
             if metric_type == 'mae':
-                metric_estimates.append(np.mean(np.abs(errors[:, i][re_sample_idx])))
+                metric_estimates.append(
+                    np.mean(np.abs(errors[:, i][re_sample_idx])))
             elif metric_type == 'rmse':
-                metric_estimates.append(np.sqrt(np.mean((errors[:, i][re_sample_idx]) ** 2)))
+                metric_estimates.append(
+                    np.sqrt(np.mean((errors[:, i][re_sample_idx]) ** 2)))
             elif metric_type == 'mape':
-                metric_estimates.append(np.mean(abs((errors[:, i][re_sample_idx]) / actual[:, i][re_sample_idx])))
+                metric_estimates.append(
+                    np.mean(abs((errors[:, i][re_sample_idx]) / actual[:, i][re_sample_idx])))
 
         sorted_estimates = np.sort(np.array(metric_estimates))
         conf_interval = [np.round(sorted_estimates[int(alpha_tail * n_bootstraps)], 6),
@@ -437,7 +473,8 @@ def confidence_interval_any(values, n_bootstraps, metric_type=None, alpha=0.05):
         re_sample_idx = np.random.randint(0, len(values), values.shape)
 
         if metric_type == 'rmse':
-            metric_estimates.append(np.sqrt(np.mean((values[re_sample_idx]) ** 2)))
+            metric_estimates.append(
+                np.sqrt(np.mean((values[re_sample_idx]) ** 2)))
         else:
             metric_estimates.append(np.mean(values[re_sample_idx]))
 
@@ -465,3 +502,68 @@ def modified_spline_evaluation(x, y, eval_points):
     spl.fit(x, y)
 
     return spl.transform(eval_points)
+
+def feature_importance_analysis(
+    model,
+    feature_names,
+    target_list
+):
+    """
+    Calculate feature importance for a fitted model.
+
+    Args:
+    ----
+         model:         model object
+         feature_names: name of the features 
+         target_list:   list of targets
+    
+    Returns:
+    -------
+            a pandas dataframe of feature importance.
+    """
+
+    # Create a lambda function to scale importance values to the interval [0, 1]
+    scaler = lambda x: (x-x.min()) / (x.max()-x.min())
+    feature_importance = [scaler(model.regressor_.estimators_[i].feature_importances_) for i in range(len(target_list))]
+
+    # Cast feature importance list to a 2D numpy array
+    feature_importance = np.array(feature_importance)
+
+    return pd.DataFrame(
+        data=feature_importance.T,
+        columns=target_list,
+        index=feature_names
+    )
+
+def plot_feature_importance(df: pd.DataFrame, fname: str) -> None:
+
+    fig = plt.figure(figsize=(18, 3))
+    df_index = np.array(df.index)
+
+    for i, item in enumerate(df.columns):
+        
+        ax = fig.add_subplot(1, 5, i+1)
+        ax.text(0.6, 0.95, item, transform=ax.transAxes, fontsize=16, fontweight='bold', va='top')
+        
+        this_importance = df[item].values
+        sort_index = np.argsort(this_importance)
+
+        this_importance = this_importance[sort_index]
+        this_index = df_index[sort_index]
+
+        ax.bar(this_index[::-1][:10], this_importance[::-1][:10], color='blue', ec='black', alpha=0.78)
+        ax.tick_params(axis='x', rotation=90, labelsize=14)
+        ax.tick_params(axis='y', labelsize=14)
+
+        if i != 0:
+            ax.set_yticklabels([])
+        
+        if i == 0:
+            ax.set_ylabel('Feature importance', fontsize=16)
+    
+    plt.show()
+    plt.savefig(fname=f"{ROOT_DIR}/plots/{fname}", bbox_inches='tight')
+
+    return None
+        
+
