@@ -43,4 +43,20 @@ This repository contains the codes for all the experiments performed in the pape
     deactivate
     ```
 
+If you use this work in your project, please cite:
+
+    @article{IBRAHEEM2023232477,
+        title = {Capacity and Internal Resistance of lithium-ion batteries: Full degradation curve prediction from Voltage response at constant Current at discharge},
+        journal = {Journal of Power Sources},
+        volume = {556},
+        pages = {232477},
+        year = {2023},
+        issn = {0378-7753},
+        doi = {https://doi.org/10.1016/j.jpowsour.2022.232477},
+        url = {https://www.sciencedirect.com/science/article/pii/S0378775322014549},
+        author = {Rasheed Ibraheem and Calum Strange and Gonçalo {dos Reis}},
+        keywords = {Capacity degradation, Internal resistance degradation, Prediction of full degradation curve, Voltage response under constant current at discharge, Lithium-ion cells, Machine learning, Remaining useful life},
+        abstract = {The use of minimal information from battery cycling data for various battery life prognostics is in high demand with many current solutions requiring full in-cycle data recording across 50–100 cycles. In this research, we propose a data-driven, feature-based machine learning model that predicts the entire capacity fade and internal resistance curves using only the voltage response from constant current discharge (fully ignoring the charge phase) over the first 50 cycles of battery use data. This approach is applicable where the discharging component is controlled and consistent, but sufficiently general to be applicable to settings with controlled charging but noisy discharge as is the case of electric vehicles. We provide a detailed analysis of the impact of the generated features on the model. We also investigate the impact of sub-sampling the voltage curve on the model performance where it was discovered that taking voltage measurements at every 1 minute is enough for model input without loss of quality. Example performance includes Capacity’s and Internal Resistance’s end of life being predicted with a mean absolute error (MAE) of 71 cycles and 1.5×10−5Ω respectively.}
+    }
+
 _Licence: [CC BY 4.0.](https://creativecommons.org/licenses/by/4.0/legalcode)_
