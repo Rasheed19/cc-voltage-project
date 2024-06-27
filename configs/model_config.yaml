@@ -1,0 +1,26 @@
+test_size: 0.3
+param_space:
+  cycle_at_model:
+    regressor__model__n_estimators:
+      - 100
+      - 200
+    regressor__model__learning_rate:
+      - 0.1
+      - 0.2
+    regressor__model__reg_alpha:
+      - 0.1
+      - 0.01
+    regressor__model__max_depth:
+      - 2
+      - 3
+  value_at_model:
+    regressor__model__n_estimators:
+      - 400
+      - 500
+    regressor__model__learning_rate:
+      - 0.1
+      - 0.2
+    regressor__model__max_depth:
+      - 5
+      - 6
+

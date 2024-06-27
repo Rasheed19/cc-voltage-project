@@ -1,0 +1,18 @@
+num_cycles: 50
+sample_cells:
+  - b1c23
+  - b1c42
+  - b3c8
+  - b3c30
+  - b8c14
+  - b1c33
+  - b2c39
+  - b3c0
+  - b3c34
+  - b8c2
+  - b8c44
+  - b2c14
+  - b8c6
+  - b1c39
+  - b2c18
+  - b8c40
