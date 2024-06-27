@@ -153,11 +153,13 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-# Ignore data, models and plots files
+# Ignore data, venv, models and plots files
+ccvvenv/
 data/
 plots/
 models/
 literature/
+legacy/
 
 
 # PyCharm
