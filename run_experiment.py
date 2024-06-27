@@ -77,7 +77,7 @@ def main(
 
     else:
         raise ValueError(
-            "experiment-type must be either 'cycle-number-effect', or 'time-step-effect' "
+            "'experiment-type' must be either 'cycle-number-effect', or 'time-step-effect' "
             f"and 'rrct-driven-modelling' but {experiment_type} is given."
         )
 

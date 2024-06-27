@@ -39,7 +39,7 @@ from utils.definitions import ROOT_DIR
     is_flag=True,
     default=False,
     help="""If given, cells from batch 8
-    are excluded from the data used for
+    will be excluded from the data used for
     modelling.
         """,
 )

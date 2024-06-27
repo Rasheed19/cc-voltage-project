@@ -18,7 +18,7 @@ def main() -> None:
         "2019-01-24_batchdata_updated_struct_errorcorrect.mat",
         "predicted_ir.pkl",
     ]
-    url_list = [
+    data_url = [
         "https://data.matr.io/1/api/v1/file/5c86c0b5fa2ede00015ddf66/download",
         "https://data.matr.io/1/api/v1/file/5c86bf13fa2ede00015ddd82/download",
         "https://data.matr.io/1/api/v1/file/5c86bd64fa2ede00015ddbb2/download",
@@ -32,8 +32,8 @@ def main() -> None:
 
     logger.info("Downloading data from online sources...")
 
-    for i, (file_name, url) in enumerate(zip(mat_filenames, url_list), start=1):
-        print(f"{i} of {len(url_list)}: downloading {file_name} from {url}...")
+    for i, (file_name, url) in enumerate(zip(mat_filenames, data_url), start=1):
+        print(f"{i} of {len(data_url)}: downloading {file_name} from {url}...")
         download_file(url=url, file_name=file_name)
 
     logger.info(
