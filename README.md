@@ -5,7 +5,7 @@ The use of minimal information from battery cycling data for various battery lif
 
 Below is the graphical abstract of the research paper:
 
-![Paper abstract](assets/graphical_abstract.png)
+![Paper abstract](assets/graphical_abstract.jpg)
 
 ## Set up
 1. Clone the repository by running
